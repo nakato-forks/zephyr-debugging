@@ -1,0 +1,88 @@
+/ {
+	chosen {
+		zephyr,console = &cdc_acm_uart0;
+		zephyr,shell-uart = &cdc_acm_uart0;
+	};
+
+	aliases {
+		adc0 = &adc;
+	};
+
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs: lfs {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/lfs";
+			partition = <&storage_partition>;
+			// Automount fails if partition is not already formatted, locking up the MCU
+			automount;
+			read-size = <16>;
+			prog-size = <16>;
+			cache-size = <64>;
+			lookahead-size = <32>;
+			block-cycles = <512>;
+		};
+	};
+
+	zephyr,user {
+		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>;
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};
+
+&code_partition {
+	// Start at 0x100.  Size is 15MB - 0x100 ending on 15MB boundary.
+	reg = <0x100 (DT_SIZE_M(15) - 0x100)>;
+};
+
+&flash0 {
+	partitions {
+		storage_partition: partition@f00000 {
+			label = "storage";
+			reg = <DT_SIZE_M(15) DT_SIZE_M(1)>;
+		};
+	};
+};
+
+&adc {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@0 {
+		reg = <0>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+		// zephyr,oversampling = <8>; // No oversampling on RPI_PICO
+	};
+
+	channel@1 {
+		reg = <1>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+
+	channel@2 {
+		reg = <2>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+
+	channel@3 {
+		reg = <3>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+};
